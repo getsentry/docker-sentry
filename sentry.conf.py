@@ -50,6 +50,8 @@ DATABASES = {
 #     }
 # }
 
+# TODO build an official memcached image
+
 ###########
 ## Queue ##
 ###########
