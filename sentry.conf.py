@@ -7,30 +7,61 @@ import os.path
 
 CONF_ROOT = os.path.dirname(__file__)
 
-# TODO add some magic "database configuration" here
+postgres = os.getenv('POSTGRES_PORT_5432_TCP_ADDR')
+mysql = os.getenv('MYSQL_PORT_3306_TCP_ADDR')
+if postgres:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.getenv('SENTRY_DB_NAME') or 'postgres',
+            'USER': os.getenv('SENTRY_DB_USER') or 'postgres',
+            'PASSWORD': os.getenv('SENTRY_DB_PASSWORD') or '',
+            'HOST': postgres,
+            'PORT': '',
 
-DATABASES = {
-    'default': {
-        # You can swap out the engine for MySQL easily by changing this value
-        # to ``django.db.backends.mysql`` or to PostgreSQL with
-        # ``django.db.backends.postgresql_psycopg2``
-
-        # If you change this, you'll also need to install the appropriate python
-        # package: psycopg2 (Postgres) or mysql-python
-        'ENGINE': 'django.db.backends.sqlite3',
-
-        'NAME': os.path.join(CONF_ROOT, 'sentry.db'),
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-
-        # If you're using Postgres, we recommend turning on autocommit
-        # 'OPTIONS': {
-        #     'autocommit': True,
-        # }
+            'OPTIONS': {
+                'autocommit': True,
+            },
+        },
     }
-}
+elif mysql:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': (
+                os.getenv('SENTRY_DB_NAME')
+                or os.getenv('MYSQL_ENV_MYSQL_DATABASE')
+                or ''
+            ),
+            'USER': (
+                os.getenv('SENTRY_DB_USER')
+                or os.getenv('MYSQL_ENV_MYSQL_USER')
+                or 'root'
+            ),
+            'PASSWORD': (
+                os.getenv('SENTRY_DB_PASSWORD')
+                or os.getenv('MYSQL_ENV_MYSQL_PASSWORD')
+                or os.getenv('MYSQL_ENV_MYSQL_ROOT_PASSWORD')
+                or ''
+            ),
+            'HOST': mysql,
+            'PORT': '',
+        },
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': (
+                os.getenv('SENTRY_DB_NAME')
+                or os.path.join(CONF_ROOT, 'sentry.db')
+            ),
+            'USER': '',
+            'PASSWORD': '',
+            'HOST': '',
+            'PORT': '',
+        },
+    }
 
 
 # If you're expecting any kind of real traffic on Sentry, we highly recommend
@@ -64,6 +95,8 @@ DATABASES = {
 # CELERY_ALWAYS_EAGER = False
 # BROKER_URL = 'redis://localhost:6379'
 
+# TODO figure out how to determine if the user actually wants queueing so we don't just unilaterally enable that for them
+
 ####################
 ## Update Buffers ##
 ####################
@@ -86,12 +119,24 @@ DATABASES = {
 #     }
 # }
 
+redis = os.getenv('REDIS_PORT_6379_TCP_ADDR')
+if redis:
+    SENTRY_BUFFER = 'sentry.buffer.redis.RedisBuffer'
+    SENTRY_REDIS_OPTIONS = {
+        'hosts': {
+            0: {
+                'host': redis,
+                'port': 6379,
+            },
+        },
+    }
+
 ################
 ## Web Server ##
 ################
 
 # You MUST configure the absolute URI root for Sentry:
-#SENTRY_URL_PREFIX = 'http://sentry.example.com'  # No trailing slash!
+SENTRY_URL_PREFIX = 'http://sentry.example.com'  # No trailing slash!
 
 # If you're using a reverse proxy, you should enable the X-Forwarded-Proto
 # and X-Forwarded-Host headers, and uncomment the following settings
@@ -112,6 +157,8 @@ SENTRY_WEB_OPTIONS = {
 
 # For more information check Django's documentation:
 #  https://docs.djangoproject.com/en/1.3/topics/email/?from=olddocs#e-mail-backends
+
+# TODO figure out a solid normalized emailing solution :(
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
