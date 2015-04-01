@@ -13,7 +13,7 @@ RUN pip install python-memcached
 # You'll need to install the required dependencies for Redis buffers:
 RUN pip install redis hiredis nydus
 
-ENV SENTRY_VERSION 7.4.1
+ENV SENTRY_VERSION 7.4.3
 
 RUN pip install sentry==$SENTRY_VERSION
 
