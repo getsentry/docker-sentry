@@ -20,6 +20,11 @@ RUN pip install sentry==$SENTRY_VERSION
 RUN mkdir -p /home/user/.sentry \
 	&& chown -R user:user /home/user/.sentry
 
+COPY docker-links.conf.py /home/user/
+COPY docker-entrypoint.sh /
+
 USER user
 EXPOSE 9000
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["sentry", "start"]
