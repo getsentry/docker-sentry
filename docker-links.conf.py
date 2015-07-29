@@ -1,7 +1,7 @@
-postgres = os.getenv('SENTRY_POSTGRES_HOST') or (os.getenv('POSTGRES_PORT_5432_TCP_ADDR') ? 'postgres' : None)
-mysql = os.getenv('SENTRY_MYSQL_HOST') or (os.getenv('MYSQL_PORT_3306_TCP_ADDR') ? 'mysql' : None)
-redis = os.getenv('SENTRY_REDIS_HOST') or (os.getenv('REDIS_PORT_6379_TCP_ADDR') ? 'redis' : None)
-memcached = os.getenv('SENTRY_MEMCACHED_HOST') or (os.getenv('MEMCACHED_PORT_11211_TCP_ADDR') ? 'memcached' : None)
+postgres = os.getenv('SENTRY_POSTGRES_HOST') or (os.getenv('POSTGRES_PORT_5432_TCP_ADDR') and 'postgres')
+mysql = os.getenv('SENTRY_MYSQL_HOST') or (os.getenv('MYSQL_PORT_3306_TCP_ADDR') and 'mysql')
+redis = os.getenv('SENTRY_REDIS_HOST') or (os.getenv('REDIS_PORT_6379_TCP_ADDR') and 'redis')
+memcached = os.getenv('SENTRY_MEMCACHED_HOST') or (os.getenv('MEMCACHED_PORT_11211_TCP_ADDR') and 'memcached')
 
 if postgres:
     DATABASES = {
@@ -80,7 +80,7 @@ else:
 if memcached:
     memcached_port = (
         os.getenv('SENTRY_MEMCACHED_PORT')
-        or 11211
+        or '11211'
     )
     CACHES = {
         'default': {
@@ -92,11 +92,11 @@ if memcached:
 if redis:
     redis_port = (
         os.getenv('SENTRY_REDIS_PORT')
-        or 6379
+        or '6379'
     )
     redis_db = (
         os.getenv('SENTRY_REDIS_DB')
-        or 0
+        or '0'
     )
     SENTRY_BUFFER = 'sentry.buffer.redis.RedisBuffer'
     SENTRY_REDIS_OPTIONS = {
