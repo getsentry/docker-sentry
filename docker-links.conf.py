@@ -1,5 +1,8 @@
-postgres = os.getenv('POSTGRES_PORT_5432_TCP_ADDR')
-mysql = os.getenv('MYSQL_PORT_3306_TCP_ADDR')
+postgres = os.getenv('SENTRY_POSTGRES_HOST') or (os.getenv('POSTGRES_PORT_5432_TCP_ADDR') ? 'postgres' : None)
+mysql = os.getenv('SENTRY_MYSQL_HOST') or (os.getenv('MYSQL_PORT_3306_TCP_ADDR') ? 'mysql' : None)
+redis = os.getenv('SENTRY_REDIS_HOST') or (os.getenv('REDIS_PORT_6379_TCP_ADDR') ? 'redis' : None)
+memcached = os.getenv('SENTRY_MEMCACHED_HOST') or (os.getenv('MEMCACHED_PORT_11211_TCP_ADDR') ? 'memcached' : None)
+
 if postgres:
     DATABASES = {
         'default': {
@@ -19,8 +22,11 @@ if postgres:
                 or os.getenv('POSTGRES_ENV_POSTGRES_PASSWORD')
                 or ''
             ),
-            'HOST': 'postgres',
-            'PORT': '',
+            'HOST': postgres,
+            'PORT': (
+                os.getenv('SENTRY_POSTGRES_PORT')
+                or ''
+            ),
             'OPTIONS': {
                 'autocommit': True,
             },
@@ -46,18 +52,24 @@ elif mysql:
                 or os.getenv('MYSQL_ENV_MYSQL_ROOT_PASSWORD')
                 or ''
             ),
-            'HOST': 'mysql',
-            'PORT': '',
+            'HOST': mysql,
+            'PORT': (
+                os.getenv('SENTRY_MYSQL_PORT')
+                or ''
+            ),
         },
     }
 else:
+    sqlite_path = (
+        os.getenv('SENTRY_DB_NAME')
+        or 'sentry.db'
+    )
+    if not os.path.isabs(sqlite_path):
+        sqlite_path = os.path.join(CONF_ROOT, sqlite_path)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': (
-                os.getenv('SENTRY_DB_NAME')
-                or os.path.join(CONF_ROOT, 'sentry.db')
-            ),
+            'NAME': sqlite_path,
             'USER': '',
             'PASSWORD': '',
             'HOST': '',
@@ -65,30 +77,40 @@ else:
         },
     }
 
-
-memcache = os.getenv('MEMCACHED_PORT_11211_TCP_ADDR')
-if memcache:
+if memcached:
+    memcached_port = (
+        os.getenv('SENTRY_MEMCACHED_PORT')
+        or 11211
+    )
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-            'LOCATION': ['memcached:11211'],
+            'LOCATION': [memcached + ':' + memcached_port],
         }
     }
 
-redis = os.getenv('REDIS_PORT_6379_TCP_ADDR')
 if redis:
+    redis_port = (
+        os.getenv('SENTRY_REDIS_PORT')
+        or 6379
+    )
+    redis_db = (
+        os.getenv('SENTRY_REDIS_DB')
+        or 0
+    )
     SENTRY_BUFFER = 'sentry.buffer.redis.RedisBuffer'
     SENTRY_REDIS_OPTIONS = {
         'hosts': {
             0: {
-                'host': 'redis',
-                'port': 6379,
+                'host': redis,
+                'port': redis_port,
+                'db': redis_db,
             },
         },
     }
-    BROKER_URL = 'redis://redis:6379'
+    BROKER_URL = 'redis://' + redis + ':' + redis_port + '/' + redis_db
 else:
-    raise Exception('Error: REDIS_PORT_6379_TCP_ADDR is undefined, did you forget to `--link` a redis container?')
+    raise Exception('Error: REDIS_PORT_6379_TCP_ADDR (or SENTRY_REDIS_HOST) is undefined, did you forget to `--link` a redis container?')
 
 if SENTRY_URL_PREFIX == 'http://sentry.example.com':
     del SENTRY_URL_PREFIX
