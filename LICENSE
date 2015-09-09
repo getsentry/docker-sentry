@@ -1,3 +1,4 @@
+Copyright (c) 2015 Sentry and individual contributors.
 Copyright (c) 2014-2015 Docker, Inc.
 All rights reserved.
 
@@ -13,7 +14,7 @@ met:
       disclaimer in the documentation and/or other materials provided
       with the distribution.
 
-    * Neither the name of Docker, Inc. nor the names of its
+    * Neither the name of Sentry nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
