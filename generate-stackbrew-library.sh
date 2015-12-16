@@ -1,23 +1,41 @@
 #!/bin/bash
 set -e
 
+declare -A aliases
+aliases=(
+	[7.7]='7 latest'
+	[8.0]='8'
+)
+
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
+versions=( */ )
+versions=( "${versions[@]%/}" )
 url='git://github.com/getsentry/docker-sentry'
 
 echo '# maintainer: Matt Robenolt <matt@getsentry.com> (@mattrobenolt)'
 
-commit="$(git log -1 --format='format:%H' -- Dockerfile $(awk 'toupper($1) == "COPY" { for (i = 2; i < NF; i++) { print $i } }' Dockerfile))"
-fullVersion="$(grep -m1 'ENV SENTRY_VERSION ' Dockerfile | cut -d' ' -f3)"
+for version in "${versions[@]}"; do
+	commit="$(cd "$version" && git log -1 --format='format:%H' -- Dockerfile $(awk 'toupper($1) == "COPY" { for (i = 2; i < NF; i++) { print $i } }' Dockerfile))"
+	fullVersion="$(grep -m1 'ENV SENTRY_VERSION ' "$version/Dockerfile" | cut -d' ' -f3)"
+	versionAliases=( $fullVersion $version ${aliases[$version]} )
 
-versionAliases=()
-while [ "${fullVersion%.*}" != "$fullVersion" ]; do
-	versionAliases+=( $fullVersion )
-	fullVersion="${fullVersion%.*}"
-done
-versionAliases+=( $fullVersion latest )
+	echo
+	for va in "${versionAliases[@]}"; do
+		echo "$va: ${url}@${commit} $version"
+	done
 
-echo
-for va in "${versionAliases[@]}"; do
-	echo "$va: ${url}@${commit}"
+	for variant in onbuild; do
+		[ -f "$version/$variant/Dockerfile" ] || continue
+		commit="$(cd "$version/$variant" && git log -1 --format='format:%H' -- Dockerfile $(awk 'toupper($1) == "COPY" { for (i = 2; i < NF; i++) { print $i } }' Dockerfile))"
+		echo
+		for va in "${versionAliases[@]}"; do
+			if [ "$va" = 'latest' ]; then
+				va="$variant"
+			else
+				va="$va-$variant"
+			fi
+			echo "$va: ${url}@${commit} $version/$variant"
+		done
+	done
 done
