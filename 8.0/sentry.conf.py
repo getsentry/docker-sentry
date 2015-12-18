@@ -217,7 +217,7 @@ SENTRY_WEB_OPTIONS = {
 # For more information check Django's documentation:
 # https://docs.djangoproject.com/en/1.6/topics/email/
 
-email = os.environ.get('SENTRY_EMAIL_HOST')
+email = os.environ.get('SENTRY_EMAIL_HOST') or (os.environ.get('SMTP_PORT_25_TCP_ADDR') and 'smtp')
 if email:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = email
