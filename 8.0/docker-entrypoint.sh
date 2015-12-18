@@ -14,10 +14,4 @@ case "$1" in
 	;;
 esac
 
-if [ "$1" = 'sentry' ]; then
-	if [ ! -f "$SENTRY_CONF/sentry.conf.py" ]; then
-		sentry init "$SENTRY_CONF"
-	fi
-fi
-
 exec "$@"
