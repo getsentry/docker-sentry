@@ -1,10 +1,10 @@
-FROM python:2.7.11
+FROM python:2.7
 
 # Sane defaults for pip
 ENV PIP_NO_CACHE_DIR off
 ENV PIP_DISABLE_PIP_VERSION_CHECK on
 
-ENV SENTRY_VERSION 8.0.0rc2
+ENV SENTRY_VERSION 8.0.0
 
 RUN pip install sentry==$SENTRY_VERSION
 
