@@ -1,0 +1,27 @@
+FROM python:2.7
+
+# Sane defaults for pip
+ENV PIP_NO_CACHE_DIR off
+ENV PIP_DISABLE_PIP_VERSION_CHECK on
+
+ENV SENTRY_VERSION 8.0.0
+
+RUN pip install sentry==$SENTRY_VERSION
+
+ENV SENTRY_CONF /etc/sentry
+ENV SENTRY_FILESTORE_DIR /var/lib/sentry/files
+RUN mkdir -p $SENTRY_CONF && mkdir -p $SENTRY_FILESTORE_DIR
+
+COPY sentry.conf.py /etc/sentry/
+COPY config.yml /etc/sentry/
+
+# Allow Celery to run as root
+ENV C_FORCE_ROOT 1
+
+COPY docker-entrypoint.sh /
+
+EXPOSE 9000
+VOLUME /var/lib/sentry/files
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["start"]
