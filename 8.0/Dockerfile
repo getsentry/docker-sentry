@@ -8,8 +8,9 @@ ENV SENTRY_VERSION 8.0.4
 
 RUN pip install sentry==$SENTRY_VERSION
 
-ENV SENTRY_CONF /etc/sentry
-ENV SENTRY_FILESTORE_DIR /var/lib/sentry/files
+ENV SENTRY_CONF=/etc/sentry \
+    SENTRY_FILESTORE_DIR=/var/lib/sentry/files
+
 RUN mkdir -p $SENTRY_CONF && mkdir -p $SENTRY_FILESTORE_DIR
 
 COPY sentry.conf.py /etc/sentry/
