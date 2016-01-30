@@ -12,6 +12,9 @@ case "$1" in
 	celery|cleanup|config|createuser|devserver|django|export|help|import|init|plugins|repair|shell|start|upgrade)
 		set -- sentry "$@"
 	;;
+	generate-secret-key)
+		exec python -c 'from sentry.runner.settings import generate_secret_key; print(generate_secret_key())'
+	;;
 esac
 
 exec "$@"
