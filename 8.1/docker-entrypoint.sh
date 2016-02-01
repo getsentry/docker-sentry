@@ -13,7 +13,7 @@ case "$1" in
 		set -- sentry "$@"
 	;;
 	generate-secret-key)
-		exec python -c 'from sentry.runner.settings import generate_secret_key; print(generate_secret_key())'
+		exec sentry config generate-secret-key
 	;;
 esac
 
