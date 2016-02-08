@@ -226,7 +226,7 @@ if email:
     EMAIL_HOST_PASSWORD = os.environ.get('SENTRY_EMAIL_PASSWORD') or ''
     EMAIL_HOST_USER = os.environ.get('SENTRY_EMAIL_USER') or ''
     EMAIL_PORT = int(os.environ.get('SENTRY_EMAIL_PORT') or 25)
-    EMAIL_USE_TLS = Bool(os.environ.get('SENTRY_EMAIL_USE_TLS', False)),
+    EMAIL_USE_TLS = Bool(os.environ.get('SENTRY_EMAIL_USE_TLS', False))
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
