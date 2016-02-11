@@ -2,6 +2,8 @@ FROM sentry:8.1
 
 WORKDIR /usr/src/sentry
 
+# Add WORKDIR to PYTHONPATH so local python files don't need to be installed
+ENV PYTHONPATH /usr/src/sentry
 ONBUILD COPY . /usr/src/sentry
 
 # Hook for installing additional plugins
