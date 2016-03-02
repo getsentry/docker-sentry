@@ -20,8 +20,10 @@
 #  SENTRY_EMAIL_PASSWORD
 #  SENTRY_EMAIL_USE_TLS
 #  SENTRY_MAILGUN_API_KEY
+#  SENTRY_SINGLE_ORGANIZATION
 #  SENTRY_SECRET_KEY
 from sentry.conf.server import *  # NOQA
+from sentry.utils.types import Bool
 
 import os
 import os.path
@@ -72,7 +74,7 @@ SENTRY_USE_BIG_INTS = True
 
 # Instruct Sentry that this install intends to be run by a single organization
 # and thus various UI optimizations should be enabled.
-SENTRY_SINGLE_ORGANIZATION = True
+SENTRY_SINGLE_ORGANIZATION = Bool(os.environ.get('SENTRY_SINGLE_ORGANIZATION', True))
 
 #########
 # Redis #
@@ -88,15 +90,19 @@ if not redis:
 redis_port = os.environ.get('SENTRY_REDIS_PORT') or '6379'
 redis_db = os.environ.get('SENTRY_REDIS_DB') or '0'
 
-SENTRY_REDIS_OPTIONS = {
-    'hosts': {
-        0: {
-            'host': redis,
-            'port': redis_port,
-            'db': redis_db,
+SENTRY_OPTIONS.update({
+    'redis.clusters': {
+        'default': {
+            'hosts': {
+                0: {
+                    'host': redis,
+                    'port': redis_port,
+                    'db': redis_db,
+                },
+            },
         },
     },
-}
+})
 
 #########
 # Cache #
@@ -121,7 +127,6 @@ if memcached:
 
 # A primary cache is required for things such as processing events
 SENTRY_CACHE = 'sentry.cache.redis.RedisCache'
-SENTRY_CACHE_OPTIONS = SENTRY_REDIS_OPTIONS
 
 #########
 # Queue #
@@ -197,17 +202,17 @@ SENTRY_FILESTORE_OPTIONS = {
 ##############
 
 # If you're using a reverse SSL proxy, you should enable the X-Forwarded-Proto
-# header and uncomment the following settings
+# header and set `SENTRY_USE_SSL=1`
 
-if 'SENTRY_USE_SSL' in os.environ:
+if Bool(os.environ.get('SENTRY_USE_SSL', False)):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 SENTRY_WEB_HOST = '0.0.0.0'
 SENTRY_WEB_PORT = 9000
 SENTRY_WEB_OPTIONS = {
-    # 'workers': 3,  # the number of gunicorn workers
-    # 'secure_scheme_headers': {'X-FORWARDED-PROTO': 'https'},
+    # 'workers': 3,  # the number of web workers
 }
 
 ###############
@@ -224,7 +229,7 @@ if email:
     EMAIL_HOST_PASSWORD = os.environ.get('SENTRY_EMAIL_PASSWORD') or ''
     EMAIL_HOST_USER = os.environ.get('SENTRY_EMAIL_USER') or ''
     EMAIL_PORT = int(os.environ.get('SENTRY_EMAIL_PORT') or 25)
-    EMAIL_USE_TLS = 'SENTRY_EMAIL_USE_TLS' in os.environ
+    EMAIL_USE_TLS = Bool(os.environ.get('SENTRY_EMAIL_USE_TLS', False))
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
@@ -235,6 +240,17 @@ SERVER_EMAIL = os.environ.get('SENTRY_SERVER_EMAIL') or 'root@localhost'
 # route to forward to /api/hooks/mailgun/inbound/
 MAILGUN_API_KEY = os.environ.get('SENTRY_MAILGUN_API_KEY') or ''
 
-secret_key = os.environ.get('SENTRY_SECRET_KEY')
-if secret_key:
-    SECRET_KEY = secret_key
+# If this value ever becomes compromised, it's important to regenerate your
+# SENTRY_SECRET_KEY. Changing this value will result in all current sessions
+# being invalidated.
+SECRET_KEY = os.environ.get('SENTRY_SECRET_KEY')
+if not SECRET_KEY:
+    raise Exception('Error: SENTRY_SECRET_KEY is undefined, run `generate-secret-key` and set to -e SENTRY_SECRET_KEY')
+
+if len(SECRET_KEY) < 32:
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    print('!!                CAUTION                    !!')
+    print('!! Your SECRET_KEY is potentially insecure.  !!')
+    print('!! We recommend at least 32 characters long. !!')
+    print('!!  Regenerate with `generate-secret-key`.   !!')
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
