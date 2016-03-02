@@ -90,15 +90,19 @@ if not redis:
 redis_port = os.environ.get('SENTRY_REDIS_PORT') or '6379'
 redis_db = os.environ.get('SENTRY_REDIS_DB') or '0'
 
-SENTRY_REDIS_OPTIONS = {
-    'hosts': {
-        0: {
-            'host': redis,
-            'port': redis_port,
-            'db': redis_db,
+SENTRY_OPTIONS.update({
+    'redis.clusters': {
+        'default': {
+            'hosts': {
+                0: {
+                    'host': redis,
+                    'port': redis_port,
+                    'db': redis_db,
+                },
+            },
         },
     },
-}
+})
 
 #########
 # Cache #
@@ -123,7 +127,6 @@ if memcached:
 
 # A primary cache is required for things such as processing events
 SENTRY_CACHE = 'sentry.cache.redis.RedisCache'
-SENTRY_CACHE_OPTIONS = SENTRY_REDIS_OPTIONS
 
 #########
 # Queue #
