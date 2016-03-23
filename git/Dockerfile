@@ -36,7 +36,8 @@ ENV NPM_VERSION 2.15.1
 
 ARG SENTRY_BUILD
 
-RUN mkdir -p /usr/local/node && PATH=/usr/local/node/bin:$PATH \
+RUN [ "$SENTRY_BUILD" != '' ] \
+    && mkdir -p /usr/local/node && PATH=/usr/local/node/bin:$PATH \
     && apt-get update && apt-get install -y --no-install-recommends make g++ \
     && rm -rf /var/lib/apt/lists/* \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
