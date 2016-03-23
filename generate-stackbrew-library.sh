@@ -15,6 +15,9 @@ url='git://github.com/getsentry/docker-sentry'
 echo '# maintainer: Matt Robenolt <matt@getsentry.com> (@mattrobenolt)'
 
 for version in "${versions[@]}"; do
+	# Ignore git folder
+	[ "$version" = git ] && continue
+
 	commit="$(cd "$version" && git log -1 --format='format:%H' -- Dockerfile $(awk 'toupper($1) == "COPY" { for (i = 2; i < NF; i++) { print $i } }' Dockerfile))"
 	fullVersion="$(grep -m1 'ENV SENTRY_VERSION ' "$version/Dockerfile" | cut -d' ' -f3)"
 	versionAliases=( $fullVersion $version ${aliases[$version]} )
