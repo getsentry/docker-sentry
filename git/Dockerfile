@@ -35,6 +35,7 @@ ENV NODE_VERSION 0.12.12
 ENV NPM_VERSION 2.15.1
 
 ARG SENTRY_BUILD
+ENV SENTRY_BUILD $SENTRY_BUILD
 
 RUN [ "$SENTRY_BUILD" != '' ] \
     && mkdir -p /usr/local/node && PATH=/usr/local/node/bin:$PATH \
@@ -59,8 +60,8 @@ RUN [ "$SENTRY_BUILD" != '' ] \
 
     && pip install dist/*.whl \
 
-    && rm -rf /usr/src/sentry \
-    && apt-get purge -y --auto-remove make g++
+    && apt-get purge -y --auto-remove make g++ \
+    && rm -rf /usr/src/sentry
 
 ENV SENTRY_CONF=/etc/sentry \
     SENTRY_FILESTORE_DIR=/var/lib/sentry/files
