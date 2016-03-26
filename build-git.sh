@@ -2,7 +2,7 @@
 set -e
 
 usage () {
-    echo "$0 <sha>"
+    echo "usage: $0 <sha>"
     exit 1
 }
 
@@ -11,12 +11,9 @@ if [ "$#" = 0 ]; then
     echo "No sha specified, using refs/head/master ($1)"
 fi
 
-if [ "$#" != 1 ]; then
-    usage
-fi
+[[ "$#" = 1 ]] || usage
 
 sha="$1"
-
 [[ $sha =~ ^[a-f0-9]{40}$ ]] || usage
 
 set -x
