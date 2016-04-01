@@ -229,6 +229,13 @@ if email:
     SENTRY_OPTIONS['mail.use-tls'] = Bool(os.environ.get('SENTRY_EMAIL_USE_TLS', False))
 else:
     SENTRY_OPTIONS['mail.backend'] = 'dummy'
+    # Hack to work around bug in Sentry, these shouldn't need to be set
+    # with dummy backend
+    SENTRY_OPTIONS['mail.host'] = 'localhost'
+    SENTRY_OPTIONS['mail.password'] = ''
+    SENTRY_OPTIONS['mail.username'] = ''
+    SENTRY_OPTIONS['mail.port'] = 25
+    SENTRY_OPTIONS['mail.use-tls'] = False
 
 # The email address to send on behalf of
 SENTRY_OPTIONS['mail.from'] = os.environ.get('SENTRY_SERVER_EMAIL') or 'root@localhost'
