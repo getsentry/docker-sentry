@@ -20,6 +20,7 @@
 #  SENTRY_EMAIL_PASSWORD
 #  SENTRY_EMAIL_USE_TLS
 #  SENTRY_ENABLE_EMAIL_REPLIES
+#  SENTRY_SMTP_HOSTNAME
 #  SENTRY_MAILGUN_API_KEY
 #  SENTRY_SINGLE_ORGANIZATION
 #  SENTRY_SECRET_KEY
@@ -251,6 +252,9 @@ if MAILGUN_API_KEY:
     SENTRY_ENABLE_EMAIL_REPLIES = True
 else:
     SENTRY_ENABLE_EMAIL_REPLIES = Bool(os.environ.get('SENTRY_ENABLE_EMAIL_REPLIES', False))
+
+if SENTRY_ENABLE_EMAIL_REPLIES:
+    SENTRY_SMTP_HOSTNAME = os.environ.get('SENTRY_SMTP_HOSTNAME') or 'localhost'
 
 # If this value ever becomes compromised, it's important to regenerate your
 # SENTRY_SECRET_KEY. Changing this value will result in all current sessions
