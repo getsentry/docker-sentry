@@ -16,8 +16,10 @@ before_script:
 script:
   - docker build -t "$image" .
   - ~/official-images/test/run.sh "$image"
-  - if [ -f onbuild/Dockerfile ]; then docker build -t "${image}-onbuild" onbuild; fi
+  - $TRAVIS_BUILD_DIR/test/run.sh "$image"
+  - if [ -f onbuild/Dockerfile ]; then docker build -t "$image-onbuild" onbuild; fi
   - if [ -f onbuild/Dockerfile ]; then ~/official-images/test/run.sh "$image-onbuild"; fi
+  - if [ -f onbuild/Dockerfile ]; then $TRAVIS_BUILD_DIR/test/run.sh "$image-onbuild"; fi
 
 after_script:
   - docker images
