@@ -19,6 +19,8 @@
 #  SENTRY_EMAIL_USER
 #  SENTRY_EMAIL_PASSWORD
 #  SENTRY_EMAIL_USE_TLS
+#  SENTRY_ENABLE_EMAIL_REPLIES
+#  SENTRY_SMTP_HOSTNAME
 #  SENTRY_MAILGUN_API_KEY
 #  SENTRY_SINGLE_ORGANIZATION
 #  SENTRY_SECRET_KEY
@@ -219,6 +221,7 @@ SENTRY_WEB_OPTIONS = {
 # Mail Server #
 ###############
 
+
 email = os.environ.get('SENTRY_EMAIL_HOST') or (os.environ.get('SMTP_PORT_25_TCP_ADDR') and 'smtp')
 if email:
     SENTRY_OPTIONS['mail.backend'] = 'smtp'
@@ -243,6 +246,15 @@ SENTRY_OPTIONS['mail.from'] = os.environ.get('SENTRY_SERVER_EMAIL') or 'root@loc
 # If you're using mailgun for inbound mail, set your API key and configure a
 # route to forward to /api/hooks/mailgun/inbound/
 MAILGUN_API_KEY = os.environ.get('SENTRY_MAILGUN_API_KEY') or ''
+
+# If you specify a MAILGUN_API_KEY, you definitely want EMAIL_REPLIES
+if MAILGUN_API_KEY:
+    SENTRY_ENABLE_EMAIL_REPLIES = True
+else:
+    SENTRY_ENABLE_EMAIL_REPLIES = Bool(os.environ.get('SENTRY_ENABLE_EMAIL_REPLIES', False))
+
+if SENTRY_ENABLE_EMAIL_REPLIES:
+    SENTRY_SMTP_HOSTNAME = os.environ.get('SENTRY_SMTP_HOSTNAME') or 'localhost'
 
 # If this value ever becomes compromised, it's important to regenerate your
 # SENTRY_SECRET_KEY. Changing this value will result in all current sessions
