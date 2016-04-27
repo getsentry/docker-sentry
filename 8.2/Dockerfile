@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PIP_NO_CACHE_DIR off
 ENV PIP_DISABLE_PIP_VERSION_CHECK on
 
-ENV SENTRY_VERSION 8.2.4
+ENV SENTRY_VERSION 8.2.5
 
 RUN pip install sentry==$SENTRY_VERSION
 
