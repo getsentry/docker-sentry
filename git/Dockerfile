@@ -31,10 +31,10 @@ RUN set -ex \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
 
-ENV NODE_VERSION 0.12.12
-ENV NPM_VERSION 2.15.1
+ENV NODE_VERSION 0.12.13
+ENV NPM_VERSION 2.15.4
 
-ARG SENTRY_BUILD
+ARG SENTRY_BUILD=master
 ENV SENTRY_BUILD $SENTRY_BUILD
 
 RUN [ "$SENTRY_BUILD" != '' ] \
@@ -80,4 +80,4 @@ EXPOSE 9000
 VOLUME /var/lib/sentry/files
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["start"]
+CMD ["run", "web"]
