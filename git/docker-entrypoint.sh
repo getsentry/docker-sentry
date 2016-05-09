@@ -17,7 +17,7 @@ case "$1" in
 	;;
 esac
 
-if [ "$1" = 'sentry' ]; then
+if [ "$1" = 'sentry' -a "$(id -u)" = '0' ]; then
 	mkdir -p "$SENTRY_FILESTORE_DIR"
 	chown -R sentry "$SENTRY_FILESTORE_DIR"
 
