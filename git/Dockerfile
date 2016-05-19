@@ -100,10 +100,10 @@ RUN mkdir -p $SENTRY_CONF && mkdir -p $SENTRY_FILESTORE_DIR
 COPY sentry.conf.py /etc/sentry/
 COPY config.yml /etc/sentry/
 
-COPY docker-entrypoint.sh /
+COPY docker-entrypoint.sh /entrypoint.sh
 
 EXPOSE 9000
 VOLUME /var/lib/sentry/files
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["run", "web"]
