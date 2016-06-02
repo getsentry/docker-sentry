@@ -7,6 +7,10 @@
 #  SENTRY_DB_NAME
 #  SENTRY_DB_USER
 #  SENTRY_DB_PASSWORD
+#  SENTRY_RABBITMQ_HOST
+#  SENTRY_RABBITMQ_USERNAME
+#  SENTRY_RABBITMQ_PASSWORD
+#  SENTRY_RABBITMQ_VHOST
 #  SENTRY_REDIS_HOST
 #  SENTRY_REDIS_PORT
 #  SENTRY_REDIS_DB
@@ -31,30 +35,31 @@ import os
 import os.path
 
 CONF_ROOT = os.path.dirname(__file__)
+env = os.environ.get
 
-postgres = os.environ.get('SENTRY_POSTGRES_HOST') or (os.environ.get('POSTGRES_PORT_5432_TCP_ADDR') and 'postgres')
+postgres = env('SENTRY_POSTGRES_HOST') or (env('POSTGRES_PORT_5432_TCP_ADDR') and 'postgres')
 if postgres:
     DATABASES = {
         'default': {
             'ENGINE': 'sentry.db.postgres',
             'NAME': (
-                os.environ.get('SENTRY_DB_NAME')
-                or os.environ.get('POSTGRES_ENV_POSTGRES_USER')
+                env('SENTRY_DB_NAME')
+                or env('POSTGRES_ENV_POSTGRES_USER')
                 or 'postgres'
             ),
             'USER': (
-                os.environ.get('SENTRY_DB_USER')
-                or os.environ.get('POSTGRES_ENV_POSTGRES_USER')
+                env('SENTRY_DB_USER')
+                or env('POSTGRES_ENV_POSTGRES_USER')
                 or 'postgres'
             ),
             'PASSWORD': (
-                os.environ.get('SENTRY_DB_PASSWORD')
-                or os.environ.get('POSTGRES_ENV_POSTGRES_PASSWORD')
+                env('SENTRY_DB_PASSWORD')
+                or env('POSTGRES_ENV_POSTGRES_PASSWORD')
                 or ''
             ),
             'HOST': postgres,
             'PORT': (
-                os.environ.get('SENTRY_POSTGRES_PORT')
+                env('SENTRY_POSTGRES_PORT')
                 or ''
             ),
             'OPTIONS': {
@@ -76,7 +81,7 @@ SENTRY_USE_BIG_INTS = True
 
 # Instruct Sentry that this install intends to be run by a single organization
 # and thus various UI optimizations should be enabled.
-SENTRY_SINGLE_ORGANIZATION = Bool(os.environ.get('SENTRY_SINGLE_ORGANIZATION', True))
+SENTRY_SINGLE_ORGANIZATION = Bool(env('SENTRY_SINGLE_ORGANIZATION', True))
 
 #########
 # Redis #
@@ -85,12 +90,12 @@ SENTRY_SINGLE_ORGANIZATION = Bool(os.environ.get('SENTRY_SINGLE_ORGANIZATION', T
 # Generic Redis configuration used as defaults for various things including:
 # Buffers, Quotas, TSDB
 
-redis = os.environ.get('SENTRY_REDIS_HOST') or (os.environ.get('REDIS_PORT_6379_TCP_ADDR') and 'redis')
+redis = env('SENTRY_REDIS_HOST') or (env('REDIS_PORT_6379_TCP_ADDR') and 'redis')
 if not redis:
     raise Exception('Error: REDIS_PORT_6379_TCP_ADDR (or SENTRY_REDIS_HOST) is undefined, did you forget to `--link` a redis container?')
 
-redis_port = os.environ.get('SENTRY_REDIS_PORT') or '6379'
-redis_db = os.environ.get('SENTRY_REDIS_DB') or '0'
+redis_port = env('SENTRY_REDIS_PORT') or '6379'
+redis_db = env('SENTRY_REDIS_DB') or '0'
 
 SENTRY_OPTIONS.update({
     'redis.clusters': {
@@ -113,10 +118,10 @@ SENTRY_OPTIONS.update({
 # Sentry currently utilizes two separate mechanisms. While CACHES is not a
 # requirement, it will optimize several high throughput patterns.
 
-memcached = os.environ.get('SENTRY_MEMCACHED_HOST') or (os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR') and 'memcached')
+memcached = env('SENTRY_MEMCACHED_HOST') or (env('MEMCACHED_PORT_11211_TCP_ADDR') and 'memcached')
 if memcached:
     memcached_port = (
-        os.environ.get('SENTRY_MEMCACHED_PORT')
+        env('SENTRY_MEMCACHED_PORT')
         or '11211'
     )
     CACHES = {
@@ -138,8 +143,27 @@ SENTRY_CACHE = 'sentry.cache.redis.RedisCache'
 # information on configuring your queue broker and workers. Sentry relies
 # on a Python framework called Celery to manage queues.
 
-CELERY_ALWAYS_EAGER = False
-BROKER_URL = 'redis://' + redis + ':' + redis_port + '/' + redis_db
+rabbitmq = env('SENTRY_RABBITMQ_HOST') or (env('RABBITMQ_PORT_5672_TCP_ADDR') and 'rabbitmq')
+
+if rabbitmq:
+    BROKER_URL = (
+        'amqp://' + (
+            env('SENTRY_RABBITMQ_USERNAME')
+            or env('RABBITMQ_ENV_RABBITMQ_DEFAULT_USER')
+            or 'guest'
+        ) + ':' + (
+            env('SENTRY_RABBITMQ_PASSWORD')
+            or env('RABBITMQ_ENV_RABBITMQ_DEFAULT_PASS')
+            or 'guest'
+        ) + '@' + rabbitmq + '/' + (
+            env('SENTRY_RABBITMQ_VHOST')
+            or env('RABBITMQ_ENV_RABBITMQ_DEFAULT_VHOST')
+            or '/'
+        )
+    )
+else:
+    BROKER_URL = 'redis://' + redis + ':' + redis_port + '/' + redis_db
+
 
 ###############
 # Rate Limits #
@@ -196,7 +220,7 @@ SENTRY_DIGESTS = 'sentry.digests.backends.redis.RedisBackend'
 
 SENTRY_FILESTORE = 'django.core.files.storage.FileSystemStorage'
 SENTRY_FILESTORE_OPTIONS = {
-    'location': os.environ['SENTRY_FILESTORE_DIR'],
+    'location': env('SENTRY_FILESTORE_DIR'),
 }
 
 ##############
@@ -206,7 +230,7 @@ SENTRY_FILESTORE_OPTIONS = {
 # If you're using a reverse SSL proxy, you should enable the X-Forwarded-Proto
 # header and set `SENTRY_USE_SSL=1`
 
-if Bool(os.environ.get('SENTRY_USE_SSL', False)):
+if Bool(env('SENTRY_USE_SSL', False)):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -222,44 +246,37 @@ SENTRY_WEB_OPTIONS = {
 ###############
 
 
-email = os.environ.get('SENTRY_EMAIL_HOST') or (os.environ.get('SMTP_PORT_25_TCP_ADDR') and 'smtp')
+email = env('SENTRY_EMAIL_HOST') or (env('SMTP_PORT_25_TCP_ADDR') and 'smtp')
 if email:
     SENTRY_OPTIONS['mail.backend'] = 'smtp'
     SENTRY_OPTIONS['mail.host'] = email
-    SENTRY_OPTIONS['mail.password'] = os.environ.get('SENTRY_EMAIL_PASSWORD') or ''
-    SENTRY_OPTIONS['mail.username'] = os.environ.get('SENTRY_EMAIL_USER') or ''
-    SENTRY_OPTIONS['mail.port'] = int(os.environ.get('SENTRY_EMAIL_PORT') or 25)
-    SENTRY_OPTIONS['mail.use-tls'] = Bool(os.environ.get('SENTRY_EMAIL_USE_TLS', False))
+    SENTRY_OPTIONS['mail.password'] = env('SENTRY_EMAIL_PASSWORD') or ''
+    SENTRY_OPTIONS['mail.username'] = env('SENTRY_EMAIL_USER') or ''
+    SENTRY_OPTIONS['mail.port'] = int(env('SENTRY_EMAIL_PORT') or 25)
+    SENTRY_OPTIONS['mail.use-tls'] = Bool(env('SENTRY_EMAIL_USE_TLS', False))
 else:
     SENTRY_OPTIONS['mail.backend'] = 'dummy'
-    # Hack to work around bug in Sentry, these shouldn't need to be set
-    # with dummy backend
-    SENTRY_OPTIONS['mail.host'] = 'localhost'
-    SENTRY_OPTIONS['mail.password'] = ''
-    SENTRY_OPTIONS['mail.username'] = ''
-    SENTRY_OPTIONS['mail.port'] = 25
-    SENTRY_OPTIONS['mail.use-tls'] = False
 
 # The email address to send on behalf of
-SENTRY_OPTIONS['mail.from'] = os.environ.get('SENTRY_SERVER_EMAIL') or 'root@localhost'
+SENTRY_OPTIONS['mail.from'] = env('SENTRY_SERVER_EMAIL') or 'root@localhost'
 
 # If you're using mailgun for inbound mail, set your API key and configure a
 # route to forward to /api/hooks/mailgun/inbound/
-MAILGUN_API_KEY = os.environ.get('SENTRY_MAILGUN_API_KEY') or ''
+SENTRY_OPTIONS['mail.mailgun-api-key'] = env('SENTRY_MAILGUN_API_KEY') or ''
 
 # If you specify a MAILGUN_API_KEY, you definitely want EMAIL_REPLIES
-if MAILGUN_API_KEY:
-    SENTRY_ENABLE_EMAIL_REPLIES = True
+if SENTRY_OPTIONS['mail.mailgun-api-key']:
+    SENTRY_OPTIONS['mail.enable-replies'] = True
 else:
-    SENTRY_ENABLE_EMAIL_REPLIES = Bool(os.environ.get('SENTRY_ENABLE_EMAIL_REPLIES', False))
+    SENTRY_OPTIONS['mail.enable-replies'] = Bool(env('SENTRY_ENABLE_EMAIL_REPLIES', False))
 
-if SENTRY_ENABLE_EMAIL_REPLIES:
-    SENTRY_SMTP_HOSTNAME = os.environ.get('SENTRY_SMTP_HOSTNAME') or 'localhost'
+if SENTRY_OPTIONS['mail.enable-replies']:
+    SENTRY_OPTIONS['mail.reply-hostname'] = env('SENTRY_SMTP_HOSTNAME') or ''
 
 # If this value ever becomes compromised, it's important to regenerate your
 # SENTRY_SECRET_KEY. Changing this value will result in all current sessions
 # being invalidated.
-secret_key = os.environ.get('SENTRY_SECRET_KEY')
+secret_key = env('SENTRY_SECRET_KEY')
 if not secret_key:
     raise Exception('Error: SENTRY_SECRET_KEY is undefined, run `generate-secret-key` and set to -e SENTRY_SECRET_KEY')
 
