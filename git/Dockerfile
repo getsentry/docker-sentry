@@ -65,8 +65,7 @@ RUN set -ex \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
 
-ENV NODE_VERSION 0.12.13
-ENV NPM_VERSION 2.15.4
+ENV NODE_VERSION 4.4.5
 
 ARG SENTRY_BUILD=master
 ENV SENTRY_BUILD $SENTRY_BUILD
@@ -81,7 +80,6 @@ RUN [ "$SENTRY_BUILD" != '' ] \
     && grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt.asc | sha256sum -c - \
     && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local/node --strip-components=1 \
     && rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc \
-    && npm install -g "npm@${NPM_VERSION}" \
 
     && mkdir -p /usr/src/sentry \
     && cd /usr/src/sentry \
