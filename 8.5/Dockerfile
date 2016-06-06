@@ -49,7 +49,7 @@ RUN set -x \
 # Support for RabbitMQ
 RUN pip install librabbitmq==1.6.1
 
-ENV SENTRY_VERSION 8.5.0
+ENV SENTRY_VERSION 8.5.1
 
 RUN pip install sentry==$SENTRY_VERSION
 
