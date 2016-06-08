@@ -12,6 +12,7 @@
 #  SENTRY_RABBITMQ_PASSWORD
 #  SENTRY_RABBITMQ_VHOST
 #  SENTRY_REDIS_HOST
+#  SENTRY_REDIS_PASSWORD
 #  SENTRY_REDIS_PORT
 #  SENTRY_REDIS_DB
 #  SENTRY_MEMCACHED_HOST
@@ -94,6 +95,7 @@ redis = env('SENTRY_REDIS_HOST') or (env('REDIS_PORT_6379_TCP_ADDR') and 'redis'
 if not redis:
     raise Exception('Error: REDIS_PORT_6379_TCP_ADDR (or SENTRY_REDIS_HOST) is undefined, did you forget to `--link` a redis container?')
 
+redis_password = env('SENTRY_REDIS_PASSWORD') or ''
 redis_port = env('SENTRY_REDIS_PORT') or '6379'
 redis_db = env('SENTRY_REDIS_DB') or '0'
 
@@ -103,6 +105,7 @@ SENTRY_OPTIONS.update({
             'hosts': {
                 0: {
                     'host': redis,
+                    'password': redis_password,
                     'port': redis_port,
                     'db': redis_db,
                 },
@@ -162,7 +165,7 @@ if rabbitmq:
         )
     )
 else:
-    BROKER_URL = 'redis://' + redis + ':' + redis_port + '/' + redis_db
+    BROKER_URL = 'redis://:' + redis_password + '@' + redis + ':' + redis_port + '/' + redis_db
 
 
 ###############
