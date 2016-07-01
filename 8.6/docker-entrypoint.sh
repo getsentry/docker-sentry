@@ -12,13 +12,15 @@ case "$1" in
 	celery|cleanup|config|createuser|devserver|django|export|help|import|init|plugins|queues|repair|run|shell|start|tsdb|upgrade)
 		set -- sentry "$@"
 	;;
-	generate-secret-key)
-		set -- sentry config generate-secret-key
-	;;
 esac
 
 if [ "$1" = 'sentry' ]; then
 	set -- tini -- "$@"
+	if [ "$(id -u)" = '0' ]; then
+		mkdir -p "$SENTRY_FILESTORE_DIR"
+		chown -R sentry "$SENTRY_FILESTORE_DIR"
+		set -- gosu sentry "$@"
+	fi
 fi
 
 exec "$@"
