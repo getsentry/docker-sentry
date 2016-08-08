@@ -1,4 +1,4 @@
-FROM python:2.7.11-slim
+FROM python:2.7.12-slim
 
 # add our user and group first to make sure their IDs get assigned consistently
 RUN groupadd -r sentry && useradd -r -m -g sentry sentry
@@ -19,7 +19,7 @@ ENV PIP_NO_CACHE_DIR off
 ENV PIP_DISABLE_PIP_VERSION_CHECK on
 
 # grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.7
+ENV GOSU_VERSION 1.9
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
@@ -49,7 +49,7 @@ RUN set -x \
 # Support for RabbitMQ
 RUN pip install librabbitmq==1.6.1
 
-ENV SENTRY_VERSION 8.5.1
+ENV SENTRY_VERSION 8.7.0
 
 RUN pip install sentry==$SENTRY_VERSION
 

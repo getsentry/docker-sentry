@@ -9,11 +9,8 @@ if [ "${1:0:1}" = '-' ]; then
 fi
 
 case "$1" in
-	celery|cleanup|config|createuser|devserver|django|export|help|import|init|plugins|queues|repair|run|shell|start|tsdb|upgrade)
+	celery|cleanup|config|createuser|devserver|django|exec|export|help|import|init|plugins|queues|repair|run|shell|start|tsdb|upgrade)
 		set -- sentry "$@"
-	;;
-	generate-secret-key)
-		set -- sentry config generate-secret-key
 	;;
 esac
 
