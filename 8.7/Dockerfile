@@ -47,7 +47,11 @@ RUN set -x \
     && apt-get purge -y --auto-remove wget
 
 # Support for RabbitMQ
-RUN pip install librabbitmq==1.6.1
+RUN set -x \
+    && apt-get update && apt-get install -y --no-install-recommends make && rm -rf /var/lib/apt/lists/* \
+    && pip install librabbitmq==1.6.1 \
+    && python -c 'import librabbitmq' \
+    && apt-get purge -y --auto-remove make
 
 ENV SENTRY_VERSION 8.7.0
 
