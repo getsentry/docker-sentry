@@ -53,7 +53,7 @@ RUN set -x \
     && python -c 'import librabbitmq' \
     && apt-get purge -y --auto-remove make
 
-ENV SENTRY_VERSION 8.6.0
+ENV SENTRY_VERSION 8.8.0
 
 RUN pip install sentry==$SENTRY_VERSION
 
