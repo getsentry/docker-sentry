@@ -20,7 +20,7 @@ ENV PIP_NO_CACHE_DIR off
 ENV PIP_DISABLE_PIP_VERSION_CHECK on
 
 # grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.9
+ENV GOSU_VERSION 1.10
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
@@ -34,7 +34,7 @@ RUN set -x \
     && apt-get purge -y --auto-remove wget
 
 # grab tini for signal processing and zombie killing
-ENV TINI_VERSION v0.9.0
+ENV TINI_VERSION v0.10.0
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/$TINI_VERSION/tini" \
@@ -59,7 +59,7 @@ ENV SENTRY_BUILD $SENTRY_BUILD
 
 RUN [ "$SENTRY_BUILD" != '' ] \
     # Install node to build assets
-    && export NODE_VERSION=4.4.5 \
+    && export NODE_VERSION=4.6.0 \
     && export GNUPGHOME="$(mktemp -d)" \
     # gpg keys listed at https://github.com/nodejs/node
     && for key in \
