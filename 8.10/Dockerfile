@@ -19,7 +19,7 @@ ENV PIP_NO_CACHE_DIR off
 ENV PIP_DISABLE_PIP_VERSION_CHECK on
 
 # grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.9
+ENV GOSU_VERSION 1.10
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
@@ -33,7 +33,7 @@ RUN set -x \
     && apt-get purge -y --auto-remove wget
 
 # grab tini for signal processing and zombie killing
-ENV TINI_VERSION v0.9.0
+ENV TINI_VERSION v0.10.0
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/$TINI_VERSION/tini" \
@@ -53,9 +53,14 @@ RUN set -x \
     && python -c 'import librabbitmq' \
     && apt-get purge -y --auto-remove make
 
-ENV SENTRY_VERSION 8.8.0
+ENV SENTRY_VERSION 8.10.0
+ENV SENTRY_PLUGINS_VERSION 8.10.0
 
-RUN pip install sentry==$SENTRY_VERSION
+RUN pip install \
+        sentry==$SENTRY_VERSION \
+        sentry-plugins==$SENTRY_PLUGINS_VERSION \
+    && sentry --help \
+    && sentry plugins list
 
 ENV SENTRY_CONF=/etc/sentry \
     SENTRY_FILESTORE_DIR=/var/lib/sentry/files

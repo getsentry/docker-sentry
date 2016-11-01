@@ -1,4 +1,4 @@
-FROM sentry:8.8
+FROM sentry:8.10
 
 WORKDIR /usr/src/sentry
 
