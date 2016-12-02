@@ -29,6 +29,10 @@
 #  SENTRY_MAILGUN_API_KEY
 #  SENTRY_SINGLE_ORGANIZATION
 #  SENTRY_SECRET_KEY
+#  GITHUB_APP_ID
+#  GITHUB_API_SECRET
+#  BITBUCKET_CONSUMER_KEY
+#  BITBUCKET_CONSUMER_SECRET
 from sentry.conf.server import *  # NOQA
 from sentry.utils.types import Bool
 
@@ -218,11 +222,11 @@ SENTRY_DIGESTS = 'sentry.digests.backends.redis.RedisBackend'
 # File storage #
 ################
 
-# Any Django storage backend is compatible with Sentry. For more solutions see
-# the django-storages package: https://django-storages.readthedocs.io/en/latest/
+# Uploaded media uses these `filestore` settings. The available
+# backends are either `filesystem` or `s3`.
 
-SENTRY_FILESTORE = 'django.core.files.storage.FileSystemStorage'
-SENTRY_FILESTORE_OPTIONS = {
+SENTRY_OPTIONS['filestore.backend'] = 'filesystem'
+SENTRY_OPTIONS['filestore.options'] = {
     'location': env('SENTRY_FILESTORE_DIR'),
 }
 
@@ -237,6 +241,7 @@ if Bool(env('SENTRY_USE_SSL', False)):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
 
 SENTRY_WEB_HOST = '0.0.0.0'
 SENTRY_WEB_PORT = 9000
@@ -292,3 +297,12 @@ if 'SENTRY_RUNNING_UWSGI' not in os.environ and len(secret_key) < 32:
     print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
 SENTRY_OPTIONS['system.secret-key'] = secret_key
+
+if 'GITHUB_APP_ID' in os.environ:
+    GITHUB_EXTENDED_PERMISSIONS = ['repo']
+    GITHUB_APP_ID = env('GITHUB_APP_ID')
+    GITHUB_API_SECRET = env('GITHUB_API_SECRET')
+
+if 'BITBUCKET_CONSUMER_KEY' in os.environ:
+    BITBUCKET_CONSUMER_KEY = env('BITBUCKET_CONSUMER_KEY')
+    BITBUCKET_CONSUMER_SECRET = env('BITBUCKET_CONSUMER_SECRET')

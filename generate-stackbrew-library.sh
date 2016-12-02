@@ -3,7 +3,7 @@ set -eu
 
 declare -A aliases
 aliases=(
-	[8.10]='8 latest'
+	[8.11]='8 latest'
 )
 
 self="$(basename "$BASH_SOURCE")"
@@ -37,7 +37,7 @@ dirCommit() {
 cat <<-EOH
 # this file is generated via https://github.com/getsentry/docker-sentry/blob/$(fileCommit "$self")/$self
 
-Maintainers: Matt Robenolt <matt@getsentry.com> (@mattrobenolt)
+Maintainers: Matt Robenolt <matt@sentry.io> (@mattrobenolt)
 GitRepo: https://github.com/getsentry/docker-sentry.git
 EOH
 
