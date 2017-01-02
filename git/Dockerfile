@@ -1,5 +1,5 @@
 # Build from any git sha by passing `--build-arg SENTRY_BUILD=<sha>`
-FROM python:2.7.12-slim
+FROM python:2.7.13-slim
 
 # add our user and group first to make sure their IDs get assigned consistently
 RUN groupadd -r sentry && useradd -r -m -g sentry sentry
@@ -20,8 +20,8 @@ ENV PIP_NO_CACHE_DIR off
 ENV PIP_DISABLE_PIP_VERSION_CHECK on
 
 # grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.10
 RUN set -x \
+    && export GOSU_VERSION=1.10 \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
     && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
@@ -34,11 +34,11 @@ RUN set -x \
     && apt-get purge -y --auto-remove wget
 
 # grab tini for signal processing and zombie killing
-ENV TINI_VERSION v0.10.0
 RUN set -x \
+    && export TINI_VERSION=0.13.1 \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
-    && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/$TINI_VERSION/tini" \
-    && wget -O /usr/local/bin/tini.asc "https://github.com/krallin/tini/releases/download/$TINI_VERSION/tini.asc" \
+    && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini" \
+    && wget -O /usr/local/bin/tini.asc "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini.asc" \
     && export GNUPGHOME="$(mktemp -d)" \
     && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 6380DC428747F6C393FEACA59A84159D7001A4E5 \
     && gpg --batch --verify /usr/local/bin/tini.asc /usr/local/bin/tini \
