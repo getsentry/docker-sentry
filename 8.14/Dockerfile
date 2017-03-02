@@ -1,4 +1,4 @@
-FROM python:2.7.12-slim
+FROM python:2.7.13-slim
 
 # add our user and group first to make sure their IDs get assigned consistently
 RUN groupadd -r sentry && useradd -r -m -g sentry sentry
@@ -33,7 +33,7 @@ RUN set -x \
     && apt-get purge -y --auto-remove wget
 
 # grab tini for signal processing and zombie killing
-ENV TINI_VERSION v0.10.0
+ENV TINI_VERSION v0.14.0
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/$TINI_VERSION/tini" \
@@ -53,10 +53,10 @@ RUN set -x \
     && python -c 'import librabbitmq' \
     && apt-get purge -y --auto-remove make
 
-ENV SENTRY_VERSION 8.12.0
+ENV SENTRY_VERSION 8.14.0
 
 RUN set -x \
-    && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
+    && apt-get update && apt-get install -y --no-install-recommends wget g++ && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /usr/src/sentry \
     && wget -O /usr/src/sentry/sentry-${SENTRY_VERSION}-py27-none-any.whl "https://github.com/getsentry/sentry/releases/download/${SENTRY_VERSION}/sentry-${SENTRY_VERSION}-py27-none-any.whl" \
     && wget -O /usr/src/sentry/sentry-${SENTRY_VERSION}-py27-none-any.whl.asc "https://github.com/getsentry/sentry/releases/download/${SENTRY_VERSION}/sentry-${SENTRY_VERSION}-py27-none-any.whl.asc" \
@@ -72,7 +72,7 @@ RUN set -x \
     && sentry --help \
     && sentry plugins list \
     && rm -r "$GNUPGHOME" /usr/src/sentry \
-    && apt-get purge -y --auto-remove wget
+    && apt-get purge -y --auto-remove wget g++
 
 ENV SENTRY_CONF=/etc/sentry \
     SENTRY_FILESTORE_DIR=/var/lib/sentry/files
