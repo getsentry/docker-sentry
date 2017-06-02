@@ -53,7 +53,7 @@ RUN set -x \
     && python -c 'import librabbitmq' \
     && apt-get purge -y --auto-remove make
 
-ENV SENTRY_VERSION 8.15.0
+ENV SENTRY_VERSION 8.17.0
 
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends wget g++ && rm -rf /var/lib/apt/lists/* \
