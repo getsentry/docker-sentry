@@ -2,8 +2,8 @@ language: bash
 services: docker
 
 env:
-  - VERSION=8.16
   - VERSION=8.17
+  - VERSION=8.18
 
 install:
   - git clone https://github.com/docker-library/official-images.git ~/official-images
