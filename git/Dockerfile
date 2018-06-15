@@ -1,5 +1,5 @@
 # Build from any git sha by passing `--build-arg SENTRY_BUILD=<sha>`
-FROM python:2.7.13-slim
+FROM python:2.7.15-slim-jessie
 
 # add our user and group first to make sure their IDs get assigned consistently
 RUN groupadd -r sentry && useradd -r -m -g sentry sentry
@@ -35,12 +35,12 @@ RUN set -x \
 
 # grab tini for signal processing and zombie killing
 RUN set -x \
-    && export TINI_VERSION=0.13.1 \
+    && export TINI_VERSION=0.18.0 \
     && apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini" \
     && wget -O /usr/local/bin/tini.asc "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini.asc" \
     && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 6380DC428747F6C393FEACA59A84159D7001A4E5 \
+    && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
     && gpg --batch --verify /usr/local/bin/tini.asc /usr/local/bin/tini \
     && rm -r "$GNUPGHOME" /usr/local/bin/tini.asc \
     && chmod +x /usr/local/bin/tini \
@@ -59,18 +59,21 @@ ENV SENTRY_BUILD $SENTRY_BUILD
 
 RUN [ "$SENTRY_BUILD" != '' ] \
     # Install node to build assets
-    && export NODE_VERSION=4.6.0 \
+    && export NODE_VERSION=8.9.1 \
+    && export YARN_VERSION=1.3.2 \
     && export GNUPGHOME="$(mktemp -d)" \
+    && export NPM_CONFIG_CACHE="$(mktemp -d)" \
+    && export YARN_CACHE_FOLDER="$(mktemp -d)" \
     # gpg keys listed at https://github.com/nodejs/node
     && for key in \
-      9554F04D7259F04124DE6B476D5A82AC7E37093B \
       94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
-      0034A06D9D9B0064CE8ADF6BF1747F4AD2306D93 \
-      FD3A5288F042B6850C66B31F09FE44734EB7990E \
-      71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
-      DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
       B9AE9905FFD7803F25714661B63B535A4C206CA9 \
+      77984A986EBC2AA786BC0F66B01FBB92821C587A \
+      56730D5401028683275BD23C23EFEFE93C4CFFFE \
+      71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
+      FD3A5288F042B6850C66B31F09FE44734EB7990E \
       C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
+      DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
     ; do \
       gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
     done \
@@ -83,6 +86,7 @@ RUN [ "$SENTRY_BUILD" != '' ] \
     && grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt.asc | sha256sum -c - \
     && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local/node --strip-components=1 \
     && rm -r "$GNUPGHOME" "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc \
+    && npm install -g yarn@$YARN_VERSION \
 
     && mkdir -p /usr/src/sentry \
     && cd /usr/src/sentry \
@@ -90,7 +94,7 @@ RUN [ "$SENTRY_BUILD" != '' ] \
     && python setup.py bdist_wheel \
 
     # Now remove node since it's not needed anymore in the final container
-    && npm cache clear \
+    && rm -r "$NPM_CONFIG_CACHE" "$YARN_CACHE_FOLDER" \
     && rm -rf /usr/local/node \
 
     && pip install dist/*.whl \
