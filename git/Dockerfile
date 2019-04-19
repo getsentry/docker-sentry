@@ -72,13 +72,14 @@ RUN set -x \
     && rm -r "$GNUPGHOME" /usr/local/bin/tini.asc \
     && chmod +x /usr/local/bin/tini \
     && tini -h \
-&& apt-get purge -y --auto-remove $fetchDeps
+    && apt-get purge -y --auto-remove $fetchDeps
 
-# Support for RabbitMQ
+# Support for RabbitMQ and GeoIP
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends make && rm -rf /var/lib/apt/lists/* \
-    && pip install librabbitmq==1.6.1 \
+    && pip install librabbitmq==1.6.1 maxminddb==1.4.1 \
     && python -c 'import librabbitmq' \
+    && python -c 'import maxminddb' \
     && apt-get purge -y --auto-remove make
 
 ARG SENTRY_BUILD=master
@@ -128,18 +129,18 @@ RUN [ "$SENTRY_BUILD" != '' ] \
     && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local/node --strip-components=1 \
     && rm -r "$GNUPGHOME" "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc \
     && npm install -g yarn@$YARN_VERSION \
-
+    \
     && mkdir -p /usr/src/sentry \
     && cd /usr/src/sentry \
     && wget -qO - "https://github.com/getsentry/sentry/archive/${SENTRY_BUILD}.tar.gz" | tar -xzf - --strip-components=1 \
     && python setup.py bdist_wheel \
-
+    \
     # Now remove node since it's not needed anymore in the final container
     && rm -r "$NPM_CONFIG_CACHE" "$YARN_CACHE_FOLDER" \
     && rm -rf /usr/local/node \
-
+    \
     && pip install dist/*.whl \
-
+    \
     && apt-get purge -y --auto-remove $buildDeps \
     && rm -rf /usr/src/sentry
 

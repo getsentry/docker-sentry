@@ -218,11 +218,11 @@ SENTRY_DIGESTS = 'sentry.digests.backends.redis.RedisBackend'
 # File storage #
 ################
 
-# Any Django storage backend is compatible with Sentry. For more solutions see
-# the django-storages package: https://django-storages.readthedocs.io/en/latest/
+# Uploaded media uses these `filestore` settings. The available
+# backends are either `filesystem` or `s3`.
 
-SENTRY_FILESTORE = 'django.core.files.storage.FileSystemStorage'
-SENTRY_FILESTORE_OPTIONS = {
+SENTRY_OPTIONS['filestore.backend'] = 'filesystem'
+SENTRY_OPTIONS['filestore.options'] = {
     'location': env('SENTRY_FILESTORE_DIR'),
 }
 
