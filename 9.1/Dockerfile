@@ -80,7 +80,7 @@ RUN set -x \
     && python -c 'import maxminddb' \
     && apt-get purge -y --auto-remove make
 
-ENV SENTRY_VERSION 9.1.0
+ENV SENTRY_VERSION 9.1.1
 
 RUN set -x \
     && buildDeps=" \
