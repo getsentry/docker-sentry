@@ -36,7 +36,7 @@ RUN set -x \
     && for key in \
       B42F6819007F00F88E364FD4036A9C25BF357DD4 \
     ; do \
-      gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
+      gpg --batch --keyserver hkp://ha.pool.sks-keyservers.net --recv-keys "$key" || \
       gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
       gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
     done \
@@ -62,7 +62,7 @@ RUN set -x \
     && for key in \
       595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
     ; do \
-      gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
+      gpg --batch --keyserver hkp://ha.pool.sks-keyservers.net --recv-keys "$key" || \
       gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
       gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
     done \
@@ -83,7 +83,7 @@ RUN set -x \
     && python -c 'import maxminddb.extension; maxminddb.extension.Reader' \
     && apt-get purge -y --auto-remove make
 
-ENV SENTRY_VERSION 9.1.1
+ENV SENTRY_VERSION 9.1.2
 
 RUN set -x \
     && buildDeps=" \
@@ -101,8 +101,10 @@ RUN set -x \
     && export GNUPGHOME="$(mktemp -d)" \
     && for key in \
       D8749766A66DD714236A932C3B2D400CE5BBCA60 \
+      70DBC4D958026B46032EAB75A17EE621C962DE46 \
+      4EBA9A94CC7DC65988662672C2F03C406631065D \
     ; do \
-      gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
+      gpg --batch --keyserver hkp://ha.pool.sks-keyservers.net --recv-keys "$key" || \
       gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
       gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
     done \
